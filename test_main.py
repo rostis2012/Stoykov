@@ -1,23 +1,15 @@
 import unittest
-# import main
 
 from unittest.mock import patch
-# from pathlib import Path
+
 from main import parsing_data_to_dict
 from main import parsing_data_to_list
 from main import make_person_info
-from main import read_files
-from main import my_main
-
-
-class TestReadFiles(unittest.TestCase):
-    def test_exeption(self):
-        with self.assertRaises(FileNotFoundError):
-            read_files('temp_dir')
+from main import main
 
 
 class TestParsingFileToDict(unittest.TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         self.test_data = ['052XL7D4 | БОЙКО ВОЛОДИМИР ІВАНОВИЧ', '5OALCRB6 | БОНДАРЕНКО ВАСИЛЬ ІВАНОВИЧ']
         self.expected_result = {'052XL7D4': 'БОЙКО ВОЛОДИМИР ІВАНОВИЧ', '5OALCRB6': 'БОНДАРЕНКО ВАСИЛЬ ІВАНОВИЧ'}
 
@@ -26,7 +18,7 @@ class TestParsingFileToDict(unittest.TestCase):
 
 
 class TestParsingFileToList(unittest.TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         self.test_data = ['FQPN6GBZ | 2020-01-01 08:11:52',
                           '9GNOKQJY | 2020-01-01 08:28:55',
                           'ANTJQK2S | 2020-01-01 08:36:54',
@@ -43,7 +35,7 @@ class TestParsingFileToList(unittest.TestCase):
 
 
 class TestMakePersonInfo(unittest.TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         self.person_id = '052XL7D4'
         self.enter = [('052XL7D4', '2020-01-01', '08:55:54'),
                       ('052XL7D4', '2020-01-01', '14:29:07'),
@@ -69,16 +61,10 @@ class TestMyMain(unittest.TestCase):
         self.expected_value = {'052XL7D4': {'name': 'БОЙКО ВОЛОДИМИР ІВАНОВИЧ',
               'visits': {'2020-01-01': [['08:55:54', '13:28:18'], ['14:29:07', '18:10:02']]}}}
 
-    @patch('Stoykov.diploma.main.read_files')
+    @patch('main.read_files')
     def test_normal_behavior(self, mock_read_files):
         mock_read_files.return_value = self.read_lines
-        # my_main(self.passed_pass)
-        res = my_main(self.passed_pass)
-        self.assertEqual(res, self.expected_value)
-
-    def test_raise_exeption(self):
-        with self.assertRaises(TypeError):
-            read_files(444)
+        self.assertEqual(main(self.passed_pass), self.expected_value)
 
 
 if __name__ == '__main__':

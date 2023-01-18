@@ -1,5 +1,5 @@
 """
-Створення словника входу / вихіду персоналу
+Making dictionary stuff entrance / exit
 """
 import pathlib
 
@@ -14,7 +14,7 @@ EXIT_FILENAME = 'exit.log'
 
 def read_files(path: str) -> tuple:
     """
-    Функція читання файлів у змінні
+    Read and write files to variables
     :param path: str
     :return: tuple
     """
@@ -33,7 +33,7 @@ def read_files(path: str) -> tuple:
 
 def parsing_data_to_dict(data_to_parsing: list) -> dict:
     """
-    Функція форматує передані значення у словник
+    Format receiving data to dict
     :param data_to_parsing: list
     :return: dict
     """
@@ -44,7 +44,7 @@ def parsing_data_to_dict(data_to_parsing: list) -> dict:
 
 def parsing_data_to_list(data_to_parsing: list) -> list:
     """
-    Функція форматує та сортує передані значення
+    Format and sort receiving data to dict
     :param data_to_parsing: list
     :return: list
     """
@@ -55,7 +55,7 @@ def parsing_data_to_list(data_to_parsing: list) -> list:
 
 def make_person_info(person_id: str, entranse: list, exit: list) -> dict:
     """
-    Функція створює словник з даних входу та виходу для отриманого ID
+    Make entrance / exit dict for received ID
     :param person_id: str
     :param entranse: list
     :param exit: list
@@ -65,17 +65,17 @@ def make_person_info(person_id: str, entranse: list, exit: list) -> dict:
     for (id_into_in, date_into_in, time_into_in), (id_into_out, date_into_out, time_into_out) in zip(entranse, exit):
         if id_into_in != person_id:
             continue
-        _time_in_out = [time_into_in, time_into_out]
+        time_in_out = [time_into_in, time_into_out]
         if visiter_dic.get(date_into_in) is None:
-            visiter_dic.update({date_into_in: [_time_in_out]})
+            visiter_dic.update({date_into_in: [time_in_out]})
         else:
-            visiter_dic[date_into_in].append(_time_in_out)
+            visiter_dic[date_into_in].append(time_in_out)
     return visiter_dic
 
 
-def my_main(path: str) -> dict:
+def main(path: str) -> dict:
     """
-    Парсінг даніх та збереження у словник
+    Parsing data and save to dict
     :param path:
     :return: dict
     """
@@ -98,5 +98,4 @@ def my_main(path: str) -> dict:
 
 
 if __name__ == '__main__':
-    # main(PATH)
-    pprint(my_main(PATH), width=100)
+    pprint(main(PATH), width=100)
