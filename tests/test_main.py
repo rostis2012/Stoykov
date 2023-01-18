@@ -2,10 +2,10 @@ import unittest
 
 from unittest.mock import patch
 
-from main import parsing_data_to_dict
-from main import parsing_data_to_list
-from main import make_person_info
-from main import main
+from Stoykov.src.staff_visits.main import parsing_data_to_dict
+from Stoykov.src.staff_visits.main import parsing_data_to_list
+from Stoykov.src.staff_visits.main import make_person_info
+from Stoykov.src.staff_visits.main import main
 
 
 class TestParsingFileToDict(unittest.TestCase):
@@ -61,7 +61,7 @@ class TestMyMain(unittest.TestCase):
         self.expected_value = {'052XL7D4': {'name': 'БОЙКО ВОЛОДИМИР ІВАНОВИЧ',
               'visits': {'2020-01-01': [['08:55:54', '13:28:18'], ['14:29:07', '18:10:02']]}}}
 
-    @patch('main.read_files')
+    @patch('Stoykov.src.staff_visits.main.read_files')
     def test_normal_behavior(self, mock_read_files):
         mock_read_files.return_value = self.read_lines
         self.assertEqual(main(self.passed_pass), self.expected_value)
