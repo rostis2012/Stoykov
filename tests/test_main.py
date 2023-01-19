@@ -52,8 +52,8 @@ class TestMakePersonInfo(unittest.TestCase):
         self.assertEqual(make_person_info(self.person_id, self.enter, self.exit), self.expected_result)
 
 
-class TestMyMain(unittest.TestCase):
-    def setUp(self) -> None:
+class TestMain(unittest.TestCase):
+    def setUp(self):
         self.passed_pass = 'test/path'
         self.read_lines = (['052XL7D4 | БОЙКО ВОЛОДИМИР ІВАНОВИЧ\n'],
                            ['052XL7D4 | 2020-01-01 08:55:54 \n',  '052XL7D4 | 2020-01-01 14:29:07 \n'],
