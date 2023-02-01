@@ -1,15 +1,38 @@
 """
 Making dictionary stuff entrance / exit
 """
-import pathlib
-
+from pathlib import Path
+from peewee import *
 from pprint import pprint
+from playhouse.shortcuts import model_to_dict
 
-PATH = '../data'
+PATH = "data"
 
 CREW_FILENAME = 'crew.txt'
 ENTRANCE_FILENAME = 'entrance.log'
 EXIT_FILENAME = 'exit.log'
+
+db = SqliteDatabase('people.db')
+
+
+class BaseModel(Model):
+    class Meta:
+        database = db
+
+
+class PersonModel(BaseModel):
+    crew_id = CharField()
+    name = CharField()
+
+
+class EnterModel(BaseModel):
+    person = ForeignKeyField(PersonModel)
+    datetime = CharField()
+
+
+class ExitModel(BaseModel):
+    person = ForeignKeyField(PersonModel)
+    datetime = CharField()
 
 
 def read_files(path: str) -> tuple:
@@ -18,7 +41,8 @@ def read_files(path: str) -> tuple:
     :param path: str
     :return: tuple
     """
-    path = pathlib.Path(path).resolve()
+    path = Path(Path.cwd().parent.parent, PATH)
+
     try:
         with open(path / CREW_FILENAME) as cf, \
                 open(path / ENTRANCE_FILENAME) as enf, \
@@ -42,60 +66,78 @@ def parsing_data_to_dict(data_to_parsing: list) -> dict:
     return parsed_data_to_dict
 
 
-def parsing_data_to_list(data_to_parsing: list) -> list:
+def db_datatime_feel(data: list, key_id: str, ModelDb: object, person_obj: object) -> None:
     """
-    Format and sort receiving data to dict
-    :param data_to_parsing: list
-    :return: list
+    Feel db from received value
+    :param data: list
+    :param key_id: str
+    :param ModelDb: db object
+    :param person_obj: db object
+    :return: None
     """
-    parsed_data_to_list = list(filter(None, ((tuple(map(str.strip, item.replace('|', '').split()))
-                                              for item in data_to_parsing))))
-    return sorted(parsed_data_to_list)
+    for item in data:
+        for key, value in parsing_data_to_dict([item]).items():
+            if key == key_id:
+                ModelDb.create(person=person_obj, datetime=value)
 
 
-def make_person_info(person_id: str, entranse: list, exit: list) -> dict:
+def get_data(person_id: str = None) -> None:
     """
-    Make entrance / exit dict for received ID
+    Print person data from db
     :param person_id: str
-    :param entranse: list
-    :param exit: list
-    :return: dict
+    :return: None
     """
-    visiter_dic = {}
-    for (id_into_in, date_into_in, time_into_in), (id_into_out, date_into_out, time_into_out) in zip(entranse, exit):
-        if id_into_in != person_id:
-            continue
-        time_in_out = [time_into_in, time_into_out]
-        if visiter_dic.get(date_into_in) is None:
-            visiter_dic.update({date_into_in: [time_in_out]})
-        else:
-            visiter_dic[date_into_in].append(time_in_out)
-    return visiter_dic
+    db.connect()
+    if person_id:
+        persons = PersonModel.select().where(PersonModel.crew_id == person_id)
+    else:
+        persons = PersonModel.select()
+    for person_obj in persons:
+        pprint(model_to_dict(person_obj))
+        for enter_date in person_obj.entermodel_set.select():
+            enter_dict = model_to_dict(enter_date, recurse=False)
+            for exit_date in person_obj.exitmodel_set.select():
+                exit_dict = model_to_dict(exit_date, recurse=False)
+                if enter_dict.get('id') == exit_dict.get('id'):
+                    print(f'enter {enter_dict.get("datetime")} exit {exit_dict.get("datetime")}')
+    db.close()
 
 
-def main(path: str) -> dict:
+def main(path: str) -> bool:
     """
-    Parsing data and save to dict
-    :param path:
-    :return: dict
+    Parsing data and save to db if db not exist
+    :param path: str
+    :return: bool
     """
     if not isinstance(path, str):
         raise TypeError(f'Got {type(path)}, expected string')
-    res = {}
-    crew, enter, exit_ = read_files(path)
-    parsed_crew_data = parsing_data_to_dict(crew)
-    parsed_enter_data = parsing_data_to_list(enter)
-    parsed_exit_data = parsing_data_to_list(exit_)
 
-    for person_id, name in parsed_crew_data.items():
-        res.update({
-            person_id: {
-                'name': name,
-                'visits': make_person_info(person_id, parsed_enter_data, parsed_exit_data)
-            }
-        })
-    return res
+    if not Path('people.db').is_file():
+        db.connect()
+        db.create_tables([PersonModel, EnterModel, ExitModel])
+        print(f'create db_file')
+        with db.atomic():
+            crew, enter, exit = read_files(PATH)
+            for person in crew:
+                for key, value in parsing_data_to_dict([person]).items():
+                    person_obj = PersonModel.create(crew_id=key, name=value)
+                    db_datatime_feel(enter, key, EnterModel, person_obj)
+                    db_datatime_feel(exit, key, ExitModel, person_obj)
+        db.close()
+        return False
+    else:
+        print(f'db_file is exist')
+        return True
 
 
 if __name__ == '__main__':
-    pprint(main(PATH), width=100)
+    if main(PATH):
+        get_data('052XL7D4')
+
+"""
+SELECT pm.*, emm.datetime as enter_time, exm.datetime as exit_time
+FROM `personmodel` as pm
+JOIN `entermodel` as emm ON emm.person_id = pm.id
+JOIN `exitmodel` as exm ON exm.person_id = pm.id # exm.id = emm.id при такому запису виводить коректно, але не ясно чи можна так
+WHERE pm.crew_id = "052XL7D4"
+"""
