@@ -1,3 +1,4 @@
 # staff_visits
 
-Making dictionary stuff entrance / exit
+First start main.py for create db stuff entrance / exit.
+Second start flask with main_flask.py and open page in browser

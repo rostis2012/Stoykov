@@ -27,12 +27,14 @@ class PersonModel(BaseModel):
 
 class EnterModel(BaseModel):
     person = ForeignKeyField(PersonModel)
-    datetime = CharField()
+    date = CharField()
+    time = CharField()
 
 
 class ExitModel(BaseModel):
     person = ForeignKeyField(PersonModel)
-    datetime = CharField()
+    date = CharField()
+    time = CharField()
 
 
 def read_files(path: str) -> tuple:
@@ -78,29 +80,38 @@ def db_datatime_feel(data: list, key_id: str, ModelDb: object, person_obj: objec
     for item in data:
         for key, value in parsing_data_to_dict([item]).items():
             if key == key_id:
-                ModelDb.create(person=person_obj, datetime=value)
+                date, time = value.split()
+                ModelDb.create(person=person_obj, date=date, time=time)
 
 
-def get_data(person_id: str = None) -> None:
+def get_data(person_id: str) -> dict:
     """
     Print person data from db
     :param person_id: str
-    :return: None
+    :return: dict
     """
     db.connect()
     if person_id:
         persons = PersonModel.select().where(PersonModel.crew_id == person_id)
     else:
         persons = PersonModel.select()
+    temp_list = []
     for person_obj in persons:
         pprint(model_to_dict(person_obj))
+        date_time_dict = {}
         for enter_date in person_obj.entermodel_set.select():
             enter_dict = model_to_dict(enter_date, recurse=False)
             for exit_date in person_obj.exitmodel_set.select():
                 exit_dict = model_to_dict(exit_date, recurse=False)
-                if enter_dict.get('id') == exit_dict.get('id'):
-                    print(f'enter {enter_dict.get("datetime")} exit {exit_dict.get("datetime")}')
+                if enter_dict.get('id') != exit_dict.get('id'):
+                    continue
+                if date_time_dict.get(enter_dict.get("date")) is None:
+                    temp_list.clear()
+                temp_list.append([enter_dict.get("time"), exit_dict.get("time")])
+                date_time_dict[enter_dict.get("date")] = temp_list
     db.close()
+    return date_time_dict
+
 
 
 def main(path: str) -> bool:
@@ -132,7 +143,7 @@ def main(path: str) -> bool:
 
 if __name__ == '__main__':
     if main(PATH):
-        get_data('052XL7D4')
+        pprint(get_data('052XL7D4'))
 
 """
 SELECT pm.*, emm.datetime as enter_time, exm.datetime as exit_time

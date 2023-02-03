@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ua">
+<head>
+<title>Hello from Flask</title>
+<style>
+a {color: blue;}
+h1 {color: red;}
+li {color: red;}
+</style>
+</head>
+<body>
+{% if persons %}
+<h2>
+<ul>
+    {% for person in persons %}
+      <li><a href="/persons/{{ person.id }}">{{ person.id }} - {{ person.crew_id }} - {{ person.name }}</a></li>
+    {% endfor %}
+  </ul>
+</h2>
+{% else %}
+  <h1>No persons</h1>
+{% endif %}
+</body>
+</html>

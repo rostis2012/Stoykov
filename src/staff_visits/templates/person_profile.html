@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ua">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ person['name'] }}</title>
+<style>
+h1 {color: blue;}
+h3 {color: black;}
+h4 {color: blue;}
+td {text-align: center;}
+</style>
+</head>
+<body>
+    <h1>{{ person['name']  }}</h1>
+    <h4>ID: {{ person['crew_id']  }}</h4>
+    <h3>
+    <table border="1" width="50%">
+        <caption>Visits</caption>
+            <tr>
+                <th>Date</th>
+                <th>In</th>
+                <th>Out</th>
+                <th>In</th>
+                <th>Out</th>
+            </tr>
+            {% for date, time in person['visits'] %}
+            <tr>
+                <td>
+                    {{ date }}
+                </td>
+                {% for time_in_out in time %}
+                    {% for time in time_in_out %}
+                        <td>
+                            {{ time }}
+                        </td>
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+            </tr>
+    </table>
+    </h3>
+</body>
+</html>
